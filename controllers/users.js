@@ -8,11 +8,11 @@ const getUsers = (req, res) => {
     .catch((err) => {
       console.error(err);
       return res
-        .status(500)
+        .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error occured on the server" });
     });
   // make sure status codes match .status
-  // dont use hard coded numbers, instead, seperate files: const BAD REQUEST STATUS CODE = 400;
+  // dont use hard coded numbers, instead, seperate files: const BAD REQUEST STATUS CODE = BAD_REQUEST_ERROR;
 };
 
 const createUser = (req, res) => {
@@ -23,9 +23,13 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res
+          .status(BAD_REQUEST_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -37,10 +41,13 @@ const getUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        return res.status(400).send({ message: err.message });
-      } else return res.status(500).send({ message: err.message });
+        return res.status(NOT_FOUND).send({ message: "Document Not Found" });
+      } else if (err.name === "Invalid Id") {
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+      } else
+        return res
+          .status(INTERNAL_SERVER_ERROR)
+          .send({ message: "Internal Server Error" });
     });
 };
 
