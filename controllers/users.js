@@ -7,8 +7,12 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(500)
+        .send({ message: "An error occured on the server" });
     });
+  // make sure status codes match .status
+  // dont use hard coded numbers, instead, seperate files: const BAD REQUEST STATUS CODE = 400;
 };
 
 const createUser = (req, res) => {
@@ -33,11 +37,10 @@ const getUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        // fill in return res.status(400).send({ message: err.message });
+        return res.status(404).send({ message: err.message });
       } else if (err.name === "CastError") {
-        // fill in
-      }
-      return res.status(500).send({ message: err.message });
+        return res.status(400).send({ message: err.message });
+      } else return res.status(500).send({ message: err.message });
     });
 };
 
