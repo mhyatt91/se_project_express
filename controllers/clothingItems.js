@@ -1,12 +1,16 @@
 const clothingItems = require("../models/clothingItems");
-const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
-const { BAD_REQUEST_ERROR } = require("../utils/errors");
-const { NOT_FOUND } = require("../utils/errors");
+
+const {
+  INTERNAL_SERVER_ERROR,
+  BAD_REQUEST_ERROR,
+  NOT_FOUND,
+} = require("../utils/errors");
+
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
   clothingItems
-    .create({ name: name, weather: weather, imageUrl, owner: req.user._id })
+    .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.send({ data: item });
     })
@@ -14,7 +18,7 @@ const createItem = (req, res) => {
       if (e.name === "ValidationError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "invalid data" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error from createItem" });
     });
@@ -24,7 +28,7 @@ const getItems = (req, res) => {
   clothingItems
     .find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
+    .catch(() => {
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error from getItems" });
@@ -36,9 +40,7 @@ const deleteItem = (req, res) => {
   clothingItems
     .findByIdAndDelete(itemId)
     .orFail()
-    .then((item) =>
-      res.status(200).send({ message: "Item successfully deleted" })
-    )
+    .then(() => res.status(200).send({ message: "Item successfully deleted" }))
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "DocumentNotFound" });
@@ -46,14 +48,14 @@ const deleteItem = (req, res) => {
       if (e.name === "CastError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error from deleteItem", e });
     });
 };
 
-const likeItem = (req, res) => {
-  return clothingItems
+const likeItem = (req, res) =>
+  clothingItems
     .findByIdAndUpdate(
       req.params.itemId,
       { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
@@ -68,13 +70,13 @@ const likeItem = (req, res) => {
       if (e.name === "CastError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error from deleteItem" });
     });
-};
-const dislikeItem = (req, res) => {
-  return clothingItems
+
+const dislikeItem = (req, res) =>
+  clothingItems
     .findByIdAndUpdate(
       req.params.itemId,
       { $pull: { likes: req.user._id } },
@@ -89,11 +91,10 @@ const dislikeItem = (req, res) => {
       if (e.name === "CastError") {
         return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
       }
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Error from deleteItem" });
     });
-};
 
 module.exports = {
   createItem,
