@@ -3,13 +3,14 @@ const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
 const { BAD_REQUEST_ERROR } = require("../utils/errors");
 const { NOT_FOUND } = require("../utils/errors");
 const { CONFLICT_ERROR } = require("../utils/errors");
+const { UNAUTHORIZED } = require("../utils/errors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 // GET /users
 
 const getCurrentUser = (req, res) => {
-  User.find({})
+  User.findById({})
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
@@ -75,7 +76,11 @@ const createUser = (req, res) => {
         password: hash,
       })
     )
-    .then((user) => res.status(201).send(user))
+    .then((user) => {
+      const { password, ...safe } = user.toObject();
+      res.status(201).json(safe);
+    })
+
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -93,7 +98,7 @@ const createUser = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { userId } = req.user;
+  const { userId } = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -112,8 +117,6 @@ const getUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email, password } = req.body;
-
   module.exports.login = (req, res) => {
     const { email, password } = req.body;
 
@@ -123,8 +126,8 @@ const login = (req, res) => {
       })
       .catch((err) => {
         // authentication error
-        res.status(401).send({ message: err.message });
+        res.status(UNAUTHORIZED).send({ message: err.message });
       });
   };
 };
-module.exports = { getCurrentUser, createUser, getUser, updateProfile };
+module.exports = { getCurrentUser, createUser, getUser, updateProfile, login };

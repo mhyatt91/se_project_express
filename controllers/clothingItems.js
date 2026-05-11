@@ -35,23 +35,29 @@ const getItems = (req, res) => {
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = async (req, res) => {
   const { itemId } = req.params;
-  clothingItems
-    .findById(itemId)
-    .orFail()
-    .then(() => res.status(200).send({ message: "Item successfully deleted" }))
-    .catch((e) => {
-      if (e.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "DocumentNotFound" });
-      }
-      if (e.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
-      }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from deleteItem", e });
-    });
+
+  try {
+    const item = await clothingItems.findById(itemId).orFail();
+
+    if (!item.owner.equals(req.user._id)) {
+      return res.status(403).send({ message: "Access denied" });
+    }
+    await clothingItems.findByIdAndDelete(itemId);
+
+    return res.status(200).send({ message: "Item successfully deleted" });
+  } catch (e) {
+    if (e.name === "CastError") {
+      return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
+    }
+    if (e.name === "DocumentNotFoundError") {
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
+    }
+    return res
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: "Error from deleteItem", e });
+  }
 };
 
 const likeItem = (req, res) =>
@@ -72,7 +78,7 @@ const likeItem = (req, res) =>
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from deleteItem" });
+        .send({ message: "Error from likeItem" });
     });
 
 const dislikeItem = (req, res) =>
@@ -93,7 +99,7 @@ const dislikeItem = (req, res) =>
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from deleteItem" });
+        .send({ message: "Error from dislikeItem" });
     });
 
 module.exports = {
