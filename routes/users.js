@@ -15,6 +15,5 @@ router.patch("/me", auth, updateProfile);
 
 //todo: create login endpoint
 //router.post("/signin", login);
-router.post("/signup", createUser);
 
 module.exports = router;

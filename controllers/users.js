@@ -6,12 +6,13 @@ const { CONFLICT_ERROR } = require("../utils/errors");
 const { UNAUTHORIZED } = require("../utils/errors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { JWT_SECRET } = require("../utils/config");
 
 // GET /users
 
 const getCurrentUser = (req, res) => {
-  User.findById({})
-    .then((users) => res.status(200).send(users))
+  User.findById(req.user._id)
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
       return res
@@ -58,14 +59,6 @@ const updateProfile = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  if (!email || !password) {
-    res.status(BAD_REQUEST_ERROR).send({
-      message: "Something..",
-    });
-
-    return;
-  }
-
   bcrypt
     .hash(password, 10)
     .then((hash) =>
@@ -77,23 +70,26 @@ const createUser = (req, res) => {
       })
     )
     .then((user) => {
-      const { password, ...safe } = user.toObject();
-      res.status(201).json(safe);
+      const { password, ...userWithoutPassword } = user.toObject();
+      res.status(201).send(userWithoutPassword);
     })
-
     .catch((err) => {
       console.error(err);
+
+      if (err.code === 11000) {
+        return res
+          .status(409)
+          .send({ message: "User with this email already exists" });
+      }
+
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST_ERROR)
-          .send({ message: "The server could not understand your request." });
-      }
-      if (err.code === 11000) {
-        return res.status(CONFLICT_ERROR).send({ message: "Conflict Error" });
+          .send({ message: "Invalid data provided" });
       }
       return res
         .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "The server could not understand your request." });
+        .send({ message: "The server could not understand your request" });
     });
 };
 
@@ -117,17 +113,23 @@ const getUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  module.exports.login = (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST_ERROR)
+      .send({ message: "Email and password are required" });
+  }
 
-    return User.findUserByCredentials(email, password)
-      .then((user) => {
-        // authentication successful! user is in the user variable
-      })
-      .catch((err) => {
-        // authentication error
-        res.status(UNAUTHORIZED).send({ message: err.message });
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
+        expiresIn: "7d",
       });
-  };
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(UNAUTHORIZED).send({ message: err.message });
+    });
 };
+
 module.exports = { getCurrentUser, createUser, getUser, updateProfile, login };
