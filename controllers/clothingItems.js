@@ -4,6 +4,7 @@ const {
   INTERNAL_SERVER_ERROR,
   BAD_REQUEST_ERROR,
   NOT_FOUND,
+  FORBIDDEN,
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
@@ -42,7 +43,7 @@ const deleteItem = async (req, res) => {
     const item = await clothingItems.findById(itemId).orFail();
 
     if (!item.owner.equals(req.user._id)) {
-      return res.status(403).send({ message: "Access denied" });
+      return res.status(FORBIDDEN).send({ message: "Access denied" });
     }
     await clothingItems.findByIdAndDelete(itemId);
 

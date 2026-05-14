@@ -18,8 +18,6 @@ mongoose
   .catch(console.error);
 
 app.use(express.json());
-app.post("/signin", login);
-app.post("/signup", createUser);
 
 app.use("/", mainRouter);
 
