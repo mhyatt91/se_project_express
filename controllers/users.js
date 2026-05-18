@@ -1,11 +1,10 @@
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
 const { BAD_REQUEST_ERROR } = require("../utils/errors");
 const { NOT_FOUND } = require("../utils/errors");
-const { CONFLICT_ERROR } = require("../utils/errors");
 const { UNAUTHORIZED } = require("../utils/errors");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 const { JWT_SECRET } = require("../utils/config");
 
 // GET /users
@@ -39,18 +38,14 @@ const updateProfile = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).json({ message: "User not found" });
       }
-      res.json(user);
+      return res.json(user);
     })
     .catch((err) => {
       console.error(err);
-
-      // Handle validation errors
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST_ERROR).json({ message: "Invalid data" });
       }
-
-      // Handle server errors
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .json({ message: "An error has occurred on the server" });
     });
@@ -70,7 +65,7 @@ const createUser = (req, res) => {
       })
     )
     .then((user) => {
-      const { password, ...userWithoutPassword } = user.toObject();
+      const { userWithoutPassword } = user.toObject();
       res.status(201).send(userWithoutPassword);
     })
     .catch((err) => {
@@ -120,16 +115,14 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
-    .catch((err) => {
-      res.status(UNAUTHORIZED).send({ message: err.message });
-    });
+    .catch((err) => res.status(UNAUTHORIZED).send({ message: err.message }));
 };
 
 module.exports = { getCurrentUser, createUser, getUser, updateProfile, login };

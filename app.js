@@ -1,5 +1,9 @@
 const express = require("express");
+const cors = require("cors");
+
 const mongoose = require("mongoose");
+const userRouter = require("express").Router();
+const itemRouter = require("express").Router();
 const mainRouter = require("./routes/index");
 const auth = require("./middlewares/auth");
 const { login, createUser } = require("./controllers/users");
@@ -7,20 +11,17 @@ const { login, createUser } = require("./controllers/users");
 const app = express();
 const { PORT = 3001 } = process.env;
 
-const cors = require("cors");
 app.use(cors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {
-    console.log("Connected to DB");
-  })
+  .then(() => {})
   .catch(console.error);
 
 app.use(express.json());
-
+app.use("/users", auth, userRouter);
+app.use("/items", auth, itemRouter);
 app.use("/", mainRouter);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.post("signin", login);
+app.post("signup", createUser);
+app.listen(PORT, () => {});

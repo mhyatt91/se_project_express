@@ -1,10 +1,10 @@
-const { login, createUser } = require("../controllers/users");
 const router = require("express").Router();
+const { login, createUser } = require("../controllers/users");
 const clothingItems = require("./clothingItems");
 const { NOT_FOUND } = require("../utils/errors");
 const userRouter = require("./users");
 const users = require("./users");
-const auth = require("../middlewares/auth.js");
+const auth = require("../middlewares/auth");
 
 router.post("/signup", createUser);
 router.post("/signin", login);
