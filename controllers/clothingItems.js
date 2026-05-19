@@ -57,7 +57,7 @@ const deleteItem = async (req, res) => {
     }
     return res
       .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "Error from deleteItem", e });
+      .send({ message: "An error has occurred on the server", e });
   }
 };
 

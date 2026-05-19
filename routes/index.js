@@ -8,9 +8,8 @@ const auth = require("../middlewares/auth");
 
 router.post("/signup", createUser);
 router.post("/signin", login);
-router.use("/items", auth, clothingItems);
-router.use("/users", auth, userRouter);
-router.use("/users", users);
+router.use("/items", clothingItems);
+router.use("/users", users, auth, userRouter);
 router.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Router not found" });
 });
