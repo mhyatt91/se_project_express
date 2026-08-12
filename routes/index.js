@@ -10,7 +10,7 @@ router.post("/signin", login);
 router.use("/items", clothingItems);
 router.use("/users", auth, userRouter);
 router.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Router not found" });
+  return next(new NotFound("User not found"));
 });
 
 module.exports = router;

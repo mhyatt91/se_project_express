@@ -7,9 +7,7 @@ module.exports = (req, res, next) => {
     const { authorization } = req.headers;
 
     if (!authorization || !authorization.startsWith("Bearer ")) {
-      return res
-        .status(UNAUTHORIZED)
-        .json({ message: "Authorization required" });
+      return next(new Unauthorized("Authorization Required"));
     }
     const token = authorization.replace("Bearer ", "");
 
@@ -19,8 +17,6 @@ module.exports = (req, res, next) => {
 
     return next();
   } catch (err) {
-    return res
-      .status(UNAUTHORIZED)
-      .json({ message: "Invalid or expired token" });
+    return next(new Unauthorized("Authorization Required"));
   }
 };

@@ -7,16 +7,17 @@ const { NOT_FOUND } = require("../utils/errors");
 const { UNAUTHORIZED } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-// GET /users
+const InternalServerError = require("../utils/errors/internal-server-err");
+const BadRequestError = require("../utils/errors/bad-request-err");
+const NotFound = require("../utils/errors/not-found-err");
+const Unauthorized = require("../utils/errors/unauthorized-err");
 
 const getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "The server could not understand your request." });
+      return next(new InternalServerError("Internal Server Error"));
     });
   // make sure status codes match .status
   // dont use hard coded numbers, instead, seperate files: const BAD REQUEST STATUS CODE = BAD_REQUEST_ERROR;
@@ -36,18 +37,16 @@ const updateProfile = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(NOT_FOUND).json({ message: "User not found" });
+        return next(new NotFound("User not found"));
       }
       return res.json(user);
     })
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST_ERROR).json({ message: "Invalid data" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .json({ message: "An error has occurred on the server" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 };
 
@@ -78,13 +77,9 @@ const createUser = (req, res) => {
       }
 
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST_ERROR)
-          .send({ message: "Invalid data provided" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "The server could not understand your request" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 };
 
@@ -96,33 +91,28 @@ const getUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "Document Not Found" });
+        return next(new NotFound("User not found"));
       }
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "Invalid ID" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Internal Server Error" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST_ERROR)
-      .send({ message: "Email and password are required" });
+    return next(new BadRequestError("Invalid Id"));
   }
 
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      return res.send({ token });
-    })
-    .catch((err) => res.status(UNAUTHORIZED).send({ message: err.message }));
+  return User.findUserByCredentials(email, password).then((user) => {
+    const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+    return res.send({ token });
+  });
+  return next(new Unauthorized("Authorization Required"));
 };
 
 module.exports = { getCurrentUser, createUser, getUser, updateProfile, login };

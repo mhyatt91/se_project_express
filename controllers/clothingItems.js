@@ -7,6 +7,11 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
+const InternalServerError = require("../utils/errors/internal-server-err");
+const BadRequestError = require("../utils/errors/bad-request-err");
+const NotFound = require("../utils/errors/not-found-err");
+const Unauthorized = require("../utils/errors/unauthorized-err");
+
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
@@ -17,11 +22,9 @@ const createItem = (req, res) => {
     })
     .catch((e) => {
       if (e.name === "ValidationError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "invalid data" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from createItem" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 };
 
@@ -29,11 +32,7 @@ const getItems = (req, res) => {
   clothingItems
     .find({})
     .then((items) => res.status(200).send(items))
-    .catch(() => {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from getItems" });
-    });
+    .catch(() => next(new InternalServerError("Internal Server Error")));
 };
 
 const deleteItem = async (req, res) => {
@@ -50,14 +49,12 @@ const deleteItem = async (req, res) => {
     return res.status(200).send({ message: "Item successfully deleted" });
   } catch (e) {
     if (e.name === "CastError") {
-      return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
+      return next(new BadRequestError("Invalid Id"));
     }
     if (e.name === "DocumentNotFoundError") {
-      return res.status(NOT_FOUND).send({ message: "Item not found" });
+      return next(new NotFound("User not found"));
     }
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server", e });
+    return next(new InternalServerError("Internal Server Error"));
   }
 };
 
@@ -72,14 +69,12 @@ const likeItem = (req, res) =>
     .then((item) => res.status(200).send(item))
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "DocumentNotFound" });
+        return next(new NotFound("User not found"));
       }
       if (e.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from likeItem" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 
 const dislikeItem = (req, res) =>
@@ -93,14 +88,12 @@ const dislikeItem = (req, res) =>
     .then((item) => res.status(200).send(item))
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "DocumentNotFound" });
+        return next(new NotFound("User not found"));
       }
       if (e.name === "CastError") {
-        return res.status(BAD_REQUEST_ERROR).send({ message: "InvalidId" });
+        return next(new BadRequestError("Invalid Id"));
       }
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "Error from dislikeItem" });
+      return next(new InternalServerError("Internal Server Error"));
     });
 
 module.exports = {
