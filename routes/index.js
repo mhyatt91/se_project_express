@@ -9,7 +9,7 @@ router.post("/signup", createUser);
 router.post("/signin", login);
 router.use("/items", clothingItems);
 router.use("/users", auth, userRouter);
-router.use((req, res) => {
+router.use((req, res, next) => {
   return next(new NotFound("User not found"));
 });
 
