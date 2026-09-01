@@ -11,11 +11,11 @@ const { PORT = 3001 } = process.env;
 app.use(cors());
 
 app.use(requestLogger);
-app.use(routes);
+/* app.use(routes); */
 
 app.use(errorLogger); // enabling the error logger
 
-app.use(errors()); // celebrate error handler
+/* app.use(errors()); // celebrate error handler */
 app.use(errorHandler);
 
 mongoose
