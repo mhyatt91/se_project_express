@@ -11,3 +11,11 @@ This project contains all the code, functionalities and techniques using Mongoos
 ### Testing
 
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
+
+Frontend Repository Link
+https://github.com/mhyatt91/se_project_react
+
+Subdomain Links
+api.wtwr.green-alien.net
+wtwr.green-alien.net
+www.wtwr.green-alien.net
