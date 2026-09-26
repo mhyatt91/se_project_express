@@ -12,7 +12,7 @@ const BadRequestError = require("../utils/errors/bad-request-err");
 const NotFound = require("../utils/errors/not-found-err");
 const Unauthorized = require("../utils/errors/unauthorized-err");
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -23,7 +23,7 @@ const getCurrentUser = (req, res) => {
   // dont use hard coded numbers, instead, seperate files: const BAD REQUEST STATUS CODE = BAD_REQUEST_ERROR;
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const userId = req.user._id;
   const { name, avatar } = req.body;
 
@@ -50,7 +50,7 @@ const updateProfile = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
@@ -83,7 +83,7 @@ const createUser = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const { userId } = req.user._id;
   User.findById(userId)
     .orFail()
@@ -100,7 +100,7 @@ const getUser = (req, res) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return next(new BadRequestError("Invalid Id"));

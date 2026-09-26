@@ -12,7 +12,7 @@ const BadRequestError = require("../utils/errors/bad-request-err");
 const NotFound = require("../utils/errors/not-found-err");
 const Unauthorized = require("../utils/errors/unauthorized-err");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
   clothingItems
@@ -28,7 +28,7 @@ const createItem = (req, res) => {
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   clothingItems
     .find({})
     .then((items) => res.status(200).send(items))
@@ -58,7 +58,7 @@ const deleteItem = async (req, res) => {
   }
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res, next) =>
   clothingItems
     .findByIdAndUpdate(
       req.params.itemId,
@@ -77,7 +77,7 @@ const likeItem = (req, res) =>
       return next(new InternalServerError("Internal Server Error"));
     });
 
-const dislikeItem = (req, res) =>
+const dislikeItem = (req, res, next) =>
   clothingItems
     .findByIdAndUpdate(
       req.params.itemId,
