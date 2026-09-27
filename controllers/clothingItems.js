@@ -1,16 +1,9 @@
 const clothingItems = require("../models/clothingItems");
 
-const {
-  INTERNAL_SERVER_ERROR,
-  BAD_REQUEST_ERROR,
-  NOT_FOUND,
-  FORBIDDEN,
-} = require("../utils/errors");
-
 const InternalServerError = require("../utils/errors/internal-server-err");
 const BadRequestError = require("../utils/errors/bad-request-err");
 const NotFound = require("../utils/errors/not-found-err");
-const Unauthorized = require("../utils/errors/unauthorized-err");
+const Forbidden = require("../utils/errors/forbidden-err");
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
@@ -35,14 +28,14 @@ const getItems = (req, res, next) => {
     .catch(() => next(new InternalServerError("Internal Server Error")));
 };
 
-const deleteItem = async (req, res) => {
+const deleteItem = async (req, res, next) => {
   const { itemId } = req.params;
 
   try {
     const item = await clothingItems.findById(itemId).orFail();
 
     if (!item.owner.equals(req.user._id)) {
-      return res.status(FORBIDDEN).send({ message: "Access denied" });
+      return next(new Forbidden("Action Forbidden"));
     }
     await clothingItems.findByIdAndDelete(itemId);
 

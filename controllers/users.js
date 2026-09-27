@@ -1,10 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const { INTERNAL_SERVER_ERROR } = require("../utils/errors");
-const { BAD_REQUEST_ERROR } = require("../utils/errors");
-const { NOT_FOUND } = require("../utils/errors");
-const { UNAUTHORIZED } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
 const InternalServerError = require("../utils/errors/internal-server-err");
@@ -64,8 +60,9 @@ const createUser = (req, res, next) => {
       })
     )
     .then((user) => {
-      const { userPassword, ...userWithoutPassword } = user.toObject();
-      res.status(201).send(userWithoutPassword);
+      const userObject = user.toObject();
+      delete userObject.password;
+      res.status(201).send(userObject);
     })
     .catch((err) => {
       console.error(err);
@@ -106,13 +103,19 @@ const login = (req, res, next) => {
     return next(new BadRequestError("Invalid Id"));
   }
 
-  return User.findUserByCredentials(email, password).then((user) => {
-    const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
-      expiresIn: "7d",
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user.id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      return res.send({ token });
+    })
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return next(new Unauthorized("Authorization Required"));
+      }
+      return next(err);
     });
-    return res.send({ token });
-  });
-  return next(new Unauthorized("Authorization Required"));
 };
 
 module.exports = { getCurrentUser, createUser, getUser, updateProfile, login };
