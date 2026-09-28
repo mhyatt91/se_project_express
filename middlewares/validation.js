@@ -10,6 +10,7 @@ function validateURL(value, helpers) {
 
 module.exports.validateClothingItem = celebrate({
   body: Joi.object().keys({
+    weather: Joi.string().valid("hot", "warm", "cold").required(),
     name: Joi.string().required().min(2).max(30).messages({
       "string.min": 'The minimum length of the "name" field is 2',
       "string.max": 'The maximum length of the "name" field is 30',

@@ -5,18 +5,15 @@ const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/errorHandler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
+require("dotenv").config();
+
 const app = express();
 const { PORT = 3001 } = process.env;
 
 app.use(cors());
 
 app.use(requestLogger);
-/* app.use(routes); */
-
-app.use(errorLogger); // enabling the error logger
-
-/* app.use(errors()); // celebrate error handler */
-app.use(errorHandler);
+app.use(errors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")

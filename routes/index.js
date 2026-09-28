@@ -8,7 +8,7 @@ const NotFoundError = require("../utils/errors/not-found-err");
 router.post("/signup", createUser);
 router.post("/signin", login);
 router.use("/items", clothingItems);
-router.use("/users", auth, userRouter);
+router.use("/users", userRouter);
 router.use((req, res, next) => next(new NotFoundError("User not found")));
 
 module.exports = router;
