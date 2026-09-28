@@ -13,7 +13,9 @@ const { PORT = 3001 } = process.env;
 
 app.use(cors());
 
+app.use(express.json());
 app.use(requestLogger);
+app.use("/", mainRouter);
 app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
@@ -23,6 +25,4 @@ mongoose
   .then(() => {})
   .catch(console.error);
 
-app.use(express.json());
-app.use("/", mainRouter);
 app.listen(PORT, () => {});

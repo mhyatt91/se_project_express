@@ -1,5 +1,3 @@
-const mongoose = require("mongoose");
-
 const clothingItemSchema = new mongoose.Schema({
   email: { String, required: true },
   password: { type: String, required: true, minlength: 2, maxlength: 15 },
